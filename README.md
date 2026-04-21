@@ -124,7 +124,7 @@ Here is a brief log of how the project was built and the logic behind specific c
 
 ### 🧠 2. Avoiding "Pop-up & Disappear" Chaos
 *   **Problem:** Points blinking in and out instantly makes analysis impossible.
-*   **Solution:** Implemented a **Point Lifetime Map**. Each point gets a `createdAt` timestamp. A garbage collector runs every 2 seconds and removes points older than `POINT_LIFETIME` (10 sec). This creates a smooth, trailing effect of traffic.
+*   **Solution:** Implemented a **Point Lifetime Map**. Each point gets a `createdAt` timestamp. A garbage collector runs every 2 seconds and removes points older than `POINT_LIFETIME` (30 sec). This creates a smooth, trailing effect of traffic.
 
 ### 🧠 3. Preventing Map Overwhelm
 *   **Problem:** Too many points (especially from Moscow/China in this dataset) overlap and look like a messy blob.
@@ -133,15 +133,11 @@ Here is a brief log of how the project was built and the logic behind specific c
     *   **Filtering:** The "Suspicious Only" checkbox hides the majority (normal traffic) on demand.
     *   **Size:** Points are small (0.08 radius) but grow slightly on hover/click.
 
-### 🧠 4. Fixing the "Mirrored World" Bug 🌏➡️🌎
-*   **Problem:** Initially, points appeared in the ocean instead of on land.
-*   **Solution:** In `latLngToPosition`, the formula for `lngRad` had a stray minus sign (`-lng * PI / 180`). Removing it fixed the projection perfectly.
-
-### 🧠 5. Adding Context with Reverse Geocoding
+### 🧠 4. Adding Context with Reverse Geocoding
 *   **Problem:** Raw coordinates (`55.7558`, `37.6173`) mean nothing to a human observer.
 *   **Solution:** Integrated **BigDataCloud Reverse Geocode API**. On clicking a point, the frontend fetches the city and country name and cleans up grammar artifacts like `(the)`.
 
-### 🧠 6. Docker Networking
+### 🧠 5. Docker Networking
 *   **Problem:** The sender container couldn't resolve `localhost`.
 *   **Solution:** Connected both containers via a custom `traffic-net` bridge network. The sender now points to `http://flask-server:5000`.
 
