@@ -62,7 +62,7 @@ Web-Traffic-Globe-Visualisation/
 - Renders a high-resolution **Earth** with clouds, atmosphere, and a starfield.
 - Fetches package data from `/packages` every **2 seconds**.
 - Converts `Latitude` and `Longitude` into 3D coordinates.
-- **Point Lifetime:** Each point stays on the globe for **10 seconds** (adjustable) before gracefully fading away (removed from the scene).
+- **Point Lifetime:** Each point stays on the globe for **30 seconds** (adjustable) before gracefully fading away (removed from the scene).
 - **Colors:**
     - 🟢 Green: Normal traffic (`suspicious = 0`)
     - 🔴 Red: Suspicious traffic (`suspicious = 1`)
