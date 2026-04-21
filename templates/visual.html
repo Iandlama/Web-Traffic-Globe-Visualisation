@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -553,7 +553,7 @@
            
             const locationElement = document.getElementById('modal-location');
             if (locationElement) {
-                locationElement.textContent = 'Загрузка...';
+                locationElement.textContent = 'Loading...';
             }
 
             try {
@@ -561,7 +561,7 @@
                 const response = await fetch(url);
                 const geoData = await response.json();
 
-                const city = geoData.city || geoData.locality || 'Неизвестно';
+                const city = geoData.city || geoData.locality || 'Unknown';
                 const country = geoData.countryName || '';
                 const locationString = city + (country ? ', ' + country : '');
 
@@ -569,9 +569,9 @@
                     locationElement.textContent = locationString;
                 }
             } catch (error) {
-                console.error('Ошибка геокодирования:', error);
+                console.error('Error:', error);
                 if (locationElement) {
-                    locationElement.textContent = 'Не удалось определить';
+                    locationElement.textContent = 'Cannot define';
                 }
             }
            
