@@ -1,0 +1,36 @@
+services:
+  flask-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "5000:5000"             
+    networks:
+      - traffic-net
+
+  data-sender:
+    build:
+      context: .
+      dockerfile: Dockerfile.sender
+    depends_on:
+      - flask-server
+    environment:
+      - SERVER_URL=http://flask-server:5000/package
+    networks:
+      - traffic-net
+    command: ["sh", "-c", "sleep 10 && python data_generation.py"]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - flask-server
+    networks:
+      - traffic-net
+
+networks:
+  traffic-net:
+    driver: bridge

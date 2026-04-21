@@ -1,0 +1,10 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN pip install flask flask-cors
+
+COPY server.py .
+#COPY templates ./templates
+
+CMD ["python", "server.py"]
