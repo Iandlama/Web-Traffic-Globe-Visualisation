@@ -31,14 +31,13 @@ This project fulfills **all core requirements** and includes **bonus interactive
 
 ```
 Web-Traffic-Globe-Visualisation/
-├── data_generation.py      # 🐍 Sender: reads CSV and streams data with delays
-├── server.py               # 🌐 Flask API: receives packages and serves the frontend
-├── ip_addresses.csv        # 📊 Dataset (IP, Lat, Lon, Timestamp, Suspicious flag)
 ├── docker-compose.yml      # 🐳 Docker composition configuration
-├── Dockerfile.server       # 🐳 Flask server container definition
+├── Dockerfile.server       # 🐳 Flask API container definition
 ├── Dockerfile.sender       # 🐳 Data sender container definition
-├── templates/              # 🎨 Frontend templates folder (Flask default)
-│   └── visual.html         # ✨ Main Three.js visualisation 
+├── Dockerfile.frontend     # 🐳 Nginx frontend container definition
+├── nginx.conf              # ⚙️ Nginx proxy configuration
+├── templates/              # 🎨 Frontend templates folder
+│   └── visual.html         # ✨ Main Three.js visualisation
 └── README.md               # 📖 You are reading it!
 ```
 
@@ -56,7 +55,7 @@ Web-Traffic-Globe-Visualisation/
 - A lightweight **Flask** application.
 - **`/package` (GET):** Receives JSON data from the sender via query parameters and stores it in memory.
 - **`/packages` (GET):** Returns the entire list of received packages to the frontend as JSON.
-- **`/` (GET):** Renders the `visual.html` template.
+- **Frontend:** Served separately by Nginx container, communicating with API via `/api/*` proxy.
 
 ### 3️⃣ Frontend Visualisation (`visual.html` + Three.js)
 - Renders a high-resolution **Earth** with clouds, atmosphere, and a starfield.
@@ -69,15 +68,15 @@ Web-Traffic-Globe-Visualisation/
 
 ### 4️⃣ Dockerisation
 - Everything is wrapped in **Docker** for easy setup.
-- `docker-compose.yml` spins up two services:
-    - `flask-server`: Exposes port `5000`.
+- `docker-compose.yml` spins up three services:
+    - `flask-server`: Flask API on internal port `5000`.
     - `data-sender`: Runs the script once the server is ready.
-
+    - `frontend`: Nginx web server on port `8080` serving the Three.js visualisation.
 ---
 
 ## 🎮 User Guide: How to Use the Visualisation
 
-Once the project is running, open `http://localhost:5000` in your browser.
+Once the project is running, open `http://localhost:8080` in your browser.
 
 | Action | How to do it | What happens |
 |--------|--------------|--------------|
@@ -106,7 +105,7 @@ Once the project is running, open `http://localhost:5000` in your browser.
     docker compose up --build
     ```
 4.  Wait for the build to finish. 
-5.  Open your browser and go to: **`http://localhost:5000`**
+5. Open your browser and go to: **`http://localhost:8080`**
 
 ### 🛑 Stopping the Service
 - Press `Ctrl + C` in the terminal.
@@ -136,6 +135,10 @@ Here is a brief log of how the project was built and the logic behind specific c
 ### 🧠 4. Adding Context with Reverse Geocoding
 *   **Problem:** Raw coordinates (`55.7558`, `37.6173`) mean nothing to a human observer.
 *   **Solution:** Integrated **BigDataCloud Reverse Geocode API**. On clicking a point, the frontend fetches the city and country name.
+
+### 🧠 5. Three-Tier Container Architecture
+- **Problem:** Assignment requires separate containers for sender, Flask, and frontend.
+- **Solution:** Implemented Nginx container serving static HTML, proxying API requests to Flask backend. This separates concerns and meets the strict Docker requirements.
 
 
 
