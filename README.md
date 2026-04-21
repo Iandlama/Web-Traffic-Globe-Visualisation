@@ -105,12 +105,7 @@ Once the project is running, open `http://localhost:5000` in your browser.
     ```bash
     docker compose up --build
     ```
-4.  Wait for the build to finish. You will see logs:
-    ```
-    flask-server-1  | 🚀 Flask server starting on http://localhost:5000
-    data-sender-1   | 🚀 Starting data sender...
-    data-sender-1   | 📦 Loaded 2940 packages
-    ```
+4.  Wait for the build to finish. 
 5.  Open your browser and go to: **`http://localhost:5000`**
 
 ### 🛑 Stopping the Service
