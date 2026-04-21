@@ -135,7 +135,7 @@ Here is a brief log of how the project was built and the logic behind specific c
 
 ### 🧠 4. Adding Context with Reverse Geocoding
 *   **Problem:** Raw coordinates (`55.7558`, `37.6173`) mean nothing to a human observer.
-*   **Solution:** Integrated **BigDataCloud Reverse Geocode API**. On clicking a point, the frontend fetches the city and country name and cleans up grammar artifacts like `(the)`.
+*   **Solution:** Integrated **BigDataCloud Reverse Geocode API**. On clicking a point, the frontend fetches the city and country name.
 
 ### 🧠 5. Docker Networking
 *   **Problem:** The sender container couldn't resolve `localhost`.
