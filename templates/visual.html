@@ -276,7 +276,7 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        // --- Глобальные переменные ---
+       
         let selectedMesh = null;
         let autoRotateWasEnabled = true;
         const tooltip = document.getElementById('tooltip');
@@ -292,7 +292,7 @@
             document.getElementById('rotate-status').textContent = controls.autoRotate ? 'ON' : 'OFF';
         };
 
-        // --- Сцена ---
+        
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050510);
 
@@ -317,7 +317,7 @@
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
-        // --- Освещение (следует за камерой) ---
+    
         const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
         scene.add(ambientLight);
 
@@ -327,7 +327,7 @@
         const fillLight = new THREE.PointLight(0x4466ff, 0.6);
         scene.add(fillLight);
 
-        // --- Звёзды ---
+       
         const starsGeometry = new THREE.BufferGeometry();
         const starsCount = 3000;
         const starPositions = new Float32Array(starsCount * 3);
@@ -344,7 +344,7 @@
         const stars = new THREE.Points(starsGeometry, starsMaterial);
         scene.add(stars);
 
-        // --- Земля ---
+        
         const textureLoader = new THREE.TextureLoader();
         const earthMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
         const earthSpecularMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
@@ -382,18 +382,18 @@
         const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(5.15, 64, 64), atmosMaterial);
         scene.add(atmosphere);
 
-        // --- Группа для точек ---
+       
         const pointsGroup = new THREE.Group();
         scene.add(pointsGroup);
 
-        // --- Данные ---
+       
         let packages = [];
         let pointsMap = new Map();
         const POINT_LIFETIME = 30000;
 
         function latLngToPosition(lat, lng, radius = 5.1) {
             const latRad = lat * Math.PI / 180;
-            const lngRad = -lng * Math.PI / 180; // ВАЖНО: минус!
+            const lngRad = -lng * Math.PI / 180; 
 
             const x = radius * Math.cos(latRad) * Math.cos(lngRad);
             const y = radius * Math.sin(latRad);
@@ -425,7 +425,7 @@
         function updatePoints(newPackages) {
             const now = Date.now();
 
-            // Удаляем старые точки
+           
             for (let [id, obj] of pointsMap.entries()) {
                 if (now - obj.createdAt > POINT_LIFETIME) {
                     pointsGroup.remove(obj.mesh);
@@ -433,11 +433,11 @@
                 }
             }
 
-            // Добавляем только новые пакеты (которых ещё нет на карте)
+            
             for (let pkg of newPackages) {
                 const id = `${pkg.ip}_${pkg.timestamp}`;
 
-                // Проверяем, нет ли уже такой точки
+                
                 let exists = false;
                 for (let obj of pointsMap.values()) {
                     if (obj.data.ip === pkg.ip && obj.data.timestamp === pkg.timestamp) {
@@ -550,7 +550,7 @@
             document.getElementById('modal-lng').textContent = data.longitude.toFixed(6) + '°';
             document.getElementById('modal-time').textContent = data.timestamp;
 
-            // --- НОВЫЙ КОД: получаем название местоположения ---
+           
             const locationElement = document.getElementById('modal-location');
             if (locationElement) {
                 locationElement.textContent = 'Загрузка...';
@@ -574,14 +574,14 @@
                     locationElement.textContent = 'Не удалось определить';
                 }
             }
-            // --- КОНЕЦ НОВОГО КОДА ---
+           
 
             document.getElementById('modal').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
             tooltip.style.display = 'none';
         }
 
-        // --- Наведение (тултип) ---
+        
         renderer.domElement.addEventListener('mousemove', (event) => {
             mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
             mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
@@ -608,7 +608,7 @@
             }
         });
 
-        // --- Клик ---
+       
         renderer.domElement.addEventListener('click', (event) => {
             mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
             mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
@@ -661,7 +661,7 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            cleanupOldPoints();   // ← ВОТ ЭТО КЛЮЧ
+            cleanupOldPoints();  
 
             keyLight.position.copy(camera.position);
             fillLight.position.copy(camera.position).add(new THREE.Vector3(3, 2, 3));
