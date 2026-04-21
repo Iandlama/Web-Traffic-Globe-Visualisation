@@ -31,13 +31,16 @@ This project fulfills **all core requirements** and includes **bonus interactive
 
 ```
 Web-Traffic-Globe-Visualisation/
+├── data_generation.py      # 🐍 Sender: reads CSV and streams data with delays
+├── server.py               # 🌐 Flask API: receives packages and serves the frontend
+├── ip_addresses.csv        # 📊 Dataset (IP, Lat, Lon, Timestamp, Suspicious flag)
 ├── docker-compose.yml      # 🐳 Docker composition configuration
 ├── Dockerfile.server       # 🐳 Flask API container definition
 ├── Dockerfile.sender       # 🐳 Data sender container definition
 ├── Dockerfile.frontend     # 🐳 Nginx frontend container definition
 ├── nginx.conf              # ⚙️ Nginx proxy configuration
 ├── templates/              # 🎨 Frontend templates folder
-│   └── visual.html         # ✨ Main Three.js visualisation
+│   └── visual.html         # ✨ Main Three.js visualisation 
 └── README.md               # 📖 You are reading it!
 ```
 
