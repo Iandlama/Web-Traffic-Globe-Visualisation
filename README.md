@@ -54,8 +54,8 @@ Web-Traffic-Globe-Visualisation/
 
 ### 2️⃣ Backend Server (`server.py`)
 - A lightweight **Flask** application.
-- **`/package` (GET/POST):** Receives JSON data from the sender and stores it in memory.
-- **`/packages` (GET):** Returns the entire list of received packages to the frontend.
+- **`/package` (GET):** Receives JSON data from the sender via query parameters and stores it in memory.
+- **`/packages` (GET):** Returns the entire list of received packages to the frontend as JSON.
 - **`/` (GET):** Renders the `visual.html` template.
 
 ### 3️⃣ Frontend Visualisation (`visual.html` + Three.js)
