@@ -137,9 +137,6 @@ Here is a brief log of how the project was built and the logic behind specific c
 *   **Problem:** Raw coordinates (`55.7558`, `37.6173`) mean nothing to a human observer.
 *   **Solution:** Integrated **BigDataCloud Reverse Geocode API**. On clicking a point, the frontend fetches the city and country name.
 
-### 🧠 5. Docker Networking
-*   **Problem:** The sender container couldn't resolve `localhost`.
-*   **Solution:** Connected both containers via a custom `traffic-net` bridge network. The sender now points to `http://flask-server:5000`.
 
 
 ---
