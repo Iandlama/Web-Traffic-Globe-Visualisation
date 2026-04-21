@@ -30,7 +30,7 @@ This project fulfills **all core requirements** and includes **bonus interactive
 ## 📁 Project Structure
 
 ```
-dwav_ass2/
+Web-Traffic-Globe-Visualisation/
 ├── data_generation.py      # 🐍 Sender: reads CSV and streams data with delays
 ├── server.py               # 🌐 Flask API: receives packages and serves the frontend
 ├── ip_addresses.csv        # 📊 Dataset (IP, Lat, Lon, Timestamp, Suspicious flag)
