@@ -100,7 +100,7 @@ Once the project is running, open `http://localhost:5000` in your browser.
 ### ▶️ Step-by-Step Launch (Recommended: Docker)
 
 1.  **Clone / Download** this repository.
-2.  Open a terminal in the root folder (`dwav_ass2`).
+2.  Open a terminal in the root folder (`Web-Traffic-Globe-Visualisation`).
 3.  Run the magic command:
     ```bash
     docker compose up --build
