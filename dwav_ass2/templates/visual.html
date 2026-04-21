@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Traffic Visualisation - Three.js</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background-color: black;
+        }
+
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: 100;
+            border-left: 4px solid #00ff88;
+        }
+
+        #stats {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: 100;
+            text-align: right;
+            border-right: 4px solid #ff4444;
+        }
+
+        #top-locations {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #top-locations h3 {
+            margin: 0 0 10px 0;
+            color: #00ff88;
+        }
+
+        #top-locations ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        #top-locations li {
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        #top-locations li:hover {
+            color: #00ff88;
+        }
+
+        .suspicious-badge {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 10, 20, 0.95);
+            color: white;
+            padding: 25px 35px;
+            border-radius: 15px;
+            z-index: 300;
+            display: none;
+            border: 1px solid #00ff88;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            min-width: 350px;
+            backdrop-filter: blur(10px);
+        }
+
+        #modal h2 {
+            margin: 0 0 20px 0;
+            color: #00ff88;
+        }
+
+        #modal .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        #modal .close-btn:hover {
+            color: #ff4444;
+        }
+
+        #modal .info-row {
+            margin: 12px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #modal .label {
+            color: #aaa;
+            min-width: 80px;
+        }
+
+        #modal .value {
+            font-weight: bold;
+        }
+
+        #modal .ip-value {
+            color: #00ff88;
+            font-size: 18px;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 250;
+            display: none;
+        }
+
+        #filter-panel {
+            position: absolute;
+            top: 220px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 12px 20px;
+            border-radius: 10px;
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        #filter-panel label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 200;
+            display: none;
+            border-left: 3px solid #00ff88;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="info">
+        <h1>🌐 Web Traffic Visualisation</h1>
+        <p>Total packages: <span id="total-count">0</span> |
+            Normal: <span id="normal-count">0</span> |
+            <span class="suspicious-badge">Suspicious: <span id="suspicious-count">0</span></span>
+        </p>
+        <p>Last update: <span id="last-update">-</span></p>
+    </div>
+
+    <div id="stats">
+        <h3>📍 Real-time Stats</h3>
+        <p>Active points: <span id="active-points">0</span></p>
+        <p>Points lifetime: 30 sec</p>
+        <p>Auto-rotate: <span id="rotate-status">ON</span></p>
+    </div>
+
+    <div id="filter-panel">
+        <label>
+            <input type="checkbox" id="suspicious-filter">
+            🔴 Show only suspicious
+        </label>
+    </div>
+
+    <div id="top-locations">
+        <h3>🔥 Top 5 Locations (click to focus)</h3>
+        <ol id="locations-list">
+            <li>Loading...</li>
+        </ol>
+    </div>
+
+    <div class="controls-hint">
+        🖱️ Drag to rotate | Scroll to zoom | <b>R</b> - toggle auto-rotate | Hover - quick info | Click - full info
+    </div>
+
+    <div id="overlay"></div>
+    <div id="modal">
+        <button class="close-btn" onclick="closeModal()">✕</button>
+        <h2>📦 Package Information</h2>
+        <div class="info-row">
+            <span class="label">IP Address:</span>
+            <span class="value ip-value" id="modal-ip">-</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Status:</span>
+            <span id="modal-status">-</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Latitude:</span>
+            <span class="value" id="modal-lat">-</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Longitude:</span>
+            <span class="value" id="modal-lng">-</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Timestamp:</span>
+            <span class="value" id="modal-time">-</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Location:</span>
+            <span class="value" id="modal-location">-</span>
+        </div>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Глобальные переменные ---
+        let selectedMesh = null;
+        let autoRotateWasEnabled = true;
+        const tooltip = document.getElementById('tooltip');
+
+        window.closeModal = function () {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+            if (selectedMesh) {
+                selectedMesh.scale.set(1, 1, 1);
+                selectedMesh = null;
+            }
+            controls.autoRotate = autoRotateWasEnabled;
+            document.getElementById('rotate-status').textContent = controls.autoRotate ? 'ON' : 'OFF';
+        };
+
+        // --- Сцена ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050510);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 15);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.0;
+        controls.enableZoom = true;
+        controls.enablePan = false;
+        controls.minDistance = 8;
+        controls.maxDistance = 20;
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // --- Освещение (следует за камерой) ---
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
+        scene.add(ambientLight);
+
+        const keyLight = new THREE.DirectionalLight(0xffeedd, 1.8);
+        scene.add(keyLight);
+
+        const fillLight = new THREE.PointLight(0x4466ff, 0.6);
+        scene.add(fillLight);
+
+        // --- Звёзды ---
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 3000;
+        const starPositions = new Float32Array(starsCount * 3);
+        for (let i = 0; i < starsCount * 3; i += 3) {
+            const r = 50 + Math.random() * 150;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() * 2) - 1);
+            starPositions[i] = Math.sin(phi) * Math.cos(theta) * r;
+            starPositions[i + 1] = Math.sin(phi) * Math.sin(theta) * r;
+            starPositions[i + 2] = Math.cos(phi) * r;
+        }
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.15 });
+        const stars = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(stars);
+
+        // --- Земля ---
+        const textureLoader = new THREE.TextureLoader();
+        const earthMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+        const earthSpecularMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+        const earthNormalMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+        const cloudMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png');
+
+        const earthMaterial = new THREE.MeshPhongMaterial({
+            map: earthMap,
+            specularMap: earthSpecularMap,
+            specular: new THREE.Color(0x333333),
+            shininess: 5,
+            normalMap: earthNormalMap,
+            normalScale: new THREE.Vector2(0.8, 0.8)
+        });
+
+        const earth = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), earthMaterial);
+        scene.add(earth);
+
+        const cloudMaterial = new THREE.MeshPhongMaterial({
+            map: cloudMap,
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide
+        });
+        const clouds = new THREE.Mesh(new THREE.SphereGeometry(5.02, 64, 64), cloudMaterial);
+        scene.add(clouds);
+
+        const atmosMaterial = new THREE.MeshPhongMaterial({
+            color: 0x3377ff,
+            transparent: true,
+            opacity: 0.08,
+            side: THREE.BackSide
+        });
+        const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(5.15, 64, 64), atmosMaterial);
+        scene.add(atmosphere);
+
+        // --- Группа для точек ---
+        const pointsGroup = new THREE.Group();
+        scene.add(pointsGroup);
+
+        // --- Данные ---
+        let packages = [];
+        let pointsMap = new Map();
+        const POINT_LIFETIME = 30000;
+
+        function latLngToPosition(lat, lng, radius = 5.1) {
+            const latRad = lat * Math.PI / 180;
+            const lngRad = -lng * Math.PI / 180; // ВАЖНО: минус!
+
+            const x = radius * Math.cos(latRad) * Math.cos(lngRad);
+            const y = radius * Math.sin(latRad);
+            const z = radius * Math.cos(latRad) * Math.sin(lngRad);
+
+            return new THREE.Vector3(x, y, z);
+        }
+
+        function createPoint(data) {
+            const isSuspicious = data.suspicious === 1;
+            const color = isSuspicious ? 0xff3333 : 0x33ff33;
+            const size = isSuspicious ? 0.12 : 0.08;
+
+            const geometry = new THREE.SphereGeometry(size, 16, 16);
+            const material = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: isSuspicious ? 0x440000 : 0x004400,
+                emissiveIntensity: 0.8
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            const pos = latLngToPosition(data.latitude, data.longitude);
+            mesh.position.copy(pos);
+            mesh.userData = data;
+
+            return mesh;
+        }
+
+        function updatePoints(newPackages) {
+            const now = Date.now();
+
+            // Удаляем старые точки
+            for (let [id, obj] of pointsMap.entries()) {
+                if (now - obj.createdAt > POINT_LIFETIME) {
+                    pointsGroup.remove(obj.mesh);
+                    pointsMap.delete(id);
+                }
+            }
+
+            // Добавляем только новые пакеты (которых ещё нет на карте)
+            for (let pkg of newPackages) {
+                const id = `${pkg.ip}_${pkg.timestamp}`;
+
+                // Проверяем, нет ли уже такой точки
+                let exists = false;
+                for (let obj of pointsMap.values()) {
+                    if (obj.data.ip === pkg.ip && obj.data.timestamp === pkg.timestamp) {
+                        exists = true;
+                        break;
+                    }
+                }
+
+                if (!exists) {
+                    const mesh = createPoint(pkg);
+                    pointsGroup.add(mesh);
+                    pointsMap.set(id, { mesh, data: pkg, createdAt: now });
+                }
+            }
+
+            applyFilter();
+            updateStats();
+            updateTopLocations();
+
+            document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+        }
+
+        function applyFilter() {
+            const suspiciousOnly = document.getElementById('suspicious-filter').checked;
+            pointsGroup.children.forEach(mesh => {
+                const data = mesh.userData;
+                mesh.visible = suspiciousOnly ? data.suspicious === 1 : true;
+            });
+
+            const visibleCount = pointsGroup.children.filter(m => m.visible).length;
+            document.getElementById('active-points').textContent = visibleCount;
+        }
+
+        function updateStats() {
+            const total = packages.length;
+            const suspicious = packages.filter(p => p.suspicious === 1).length;
+
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('normal-count').textContent = total - suspicious;
+            document.getElementById('suspicious-count').textContent = suspicious;
+        }
+
+        function updateTopLocations() {
+            const locationCount = {};
+
+            packages.forEach(p => {
+                const key = `${p.latitude.toFixed(2)},${p.longitude.toFixed(2)}`;
+                locationCount[key] = (locationCount[key] || 0) + 1;
+            });
+
+            const sorted = Object.entries(locationCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            const listEl = document.getElementById('locations-list');
+            listEl.innerHTML = '';
+
+            sorted.forEach(([coords, count]) => {
+                const [lat, lng] = coords.split(',');
+                const li = document.createElement('li');
+                li.textContent = `${count} packages at ${parseFloat(lat).toFixed(1)}°, ${parseFloat(lng).toFixed(1)}°`;
+                li.onclick = () => {
+                    const pos = latLngToPosition(parseFloat(lat), parseFloat(lng), 8);
+                    camera.position.copy(pos.clone().multiplyScalar(1.5));
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                };
+                listEl.appendChild(li);
+            });
+        }
+
+        /* function openModal(data, mesh) {
+             selectedMesh = mesh;
+             mesh.scale.set(1.5, 1.5, 1.5);
+ 
+             autoRotateWasEnabled = controls.autoRotate;
+             controls.autoRotate = false;
+             document.getElementById('rotate-status').textContent = 'OFF';
+ 
+             const isSuspicious = data.suspicious === 1;
+ 
+             document.getElementById('modal-ip').textContent = data.ip;
+             document.getElementById('modal-status').innerHTML = isSuspicious ?
+                 '<span style="background:#ff4444;padding:5px 12px;border-radius:20px;">⚠️ SUSPICIOUS</span>' :
+                 '<span style="background:#33ff33;color:black;padding:5px 12px;border-radius:20px;">✅ NORMAL</span>';
+             document.getElementById('modal-lat').textContent = data.latitude.toFixed(6) + '°';
+             document.getElementById('modal-lng').textContent = data.longitude.toFixed(6) + '°';
+             document.getElementById('modal-time').textContent = data.timestamp;
+ 
+             document.getElementById('modal').style.display = 'block';
+             document.getElementById('overlay').style.display = 'block';
+             tooltip.style.display = 'none';
+          }*/
+
+        async function openModal(data, mesh) {
+            selectedMesh = mesh;
+            mesh.scale.set(1.5, 1.5, 1.5);
+
+            autoRotateWasEnabled = controls.autoRotate;
+            controls.autoRotate = false;
+            document.getElementById('rotate-status').textContent = 'OFF';
+
+            const isSuspicious = data.suspicious === 1;
+
+            document.getElementById('modal-ip').textContent = data.ip;
+            document.getElementById('modal-status').innerHTML = isSuspicious ?
+                '<span style="background:#ff4444;padding:5px 12px;border-radius:20px;">⚠️ SUSPICIOUS</span>' :
+                '<span style="background:#33ff33;color:black;padding:5px 12px;border-radius:20px;">✅ NORMAL</span>';
+            document.getElementById('modal-lat').textContent = data.latitude.toFixed(6) + '°';
+            document.getElementById('modal-lng').textContent = data.longitude.toFixed(6) + '°';
+            document.getElementById('modal-time').textContent = data.timestamp;
+
+            // --- НОВЫЙ КОД: получаем название местоположения ---
+            const locationElement = document.getElementById('modal-location');
+            if (locationElement) {
+                locationElement.textContent = 'Загрузка...';
+            }
+
+            try {
+                const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${data.latitude}&longitude=${data.longitude}&localityLanguage=en`;
+                const response = await fetch(url);
+                const geoData = await response.json();
+
+                const city = geoData.city || geoData.locality || 'Неизвестно';
+                const country = geoData.countryName || '';
+                const locationString = city + (country ? ', ' + country : '');
+
+                if (locationElement) {
+                    locationElement.textContent = locationString;
+                }
+            } catch (error) {
+                console.error('Ошибка геокодирования:', error);
+                if (locationElement) {
+                    locationElement.textContent = 'Не удалось определить';
+                }
+            }
+            // --- КОНЕЦ НОВОГО КОДА ---
+
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+            tooltip.style.display = 'none';
+        }
+
+        // --- Наведение (тултип) ---
+        renderer.domElement.addEventListener('mousemove', (event) => {
+            mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+            mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            const meshes = pointsGroup.children.filter(m => m.visible);
+            const intersects = raycaster.intersectObjects(meshes);
+
+            if (intersects.length > 0) {
+                const data = intersects[0].object.userData;
+                tooltip.style.display = 'block';
+                tooltip.style.left = (event.clientX + 15) + 'px';
+                tooltip.style.top = (event.clientY - 15) + 'px';
+                tooltip.innerHTML = `
+                    🌐 <b>${data.ip}</b><br>
+                    ${data.suspicious === 1 ? '⚠️ SUSPICIOUS' : '✅ Normal'}<br>
+                    📍 ${data.latitude.toFixed(4)}°, ${data.longitude.toFixed(4)}°
+                `;
+                renderer.domElement.style.cursor = 'pointer';
+            } else {
+                tooltip.style.display = 'none';
+                renderer.domElement.style.cursor = 'default';
+            }
+        });
+
+        // --- Клик ---
+        renderer.domElement.addEventListener('click', (event) => {
+            mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+            mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            const meshes = pointsGroup.children.filter(m => m.visible);
+            const intersects = raycaster.intersectObjects(meshes);
+
+            if (intersects.length > 0) {
+                const mesh = intersects[0].object;
+                openModal(mesh.userData, mesh);
+            }
+        });
+
+        document.getElementById('overlay').addEventListener('click', closeModal);
+        document.getElementById('suspicious-filter').addEventListener('change', applyFilter);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') {
+                controls.autoRotate = !controls.autoRotate;
+                document.getElementById('rotate-status').textContent = controls.autoRotate ? 'ON' : 'OFF';
+            }
+            if (e.key === 'Escape') closeModal();
+        });
+
+        async function fetchPackages() {
+            try {
+                const response = await fetch('http://localhost:5000/packages');
+                const data = await response.json();
+                packages = data;
+                updatePoints(data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        function cleanupOldPoints() {
+            const now = Date.now();
+
+            for (let [id, obj] of pointsMap.entries()) {
+                if (now - obj.createdAt > POINT_LIFETIME) {
+                    pointsGroup.remove(obj.mesh);
+                    pointsMap.delete(id);
+                }
+            }
+
+            applyFilter();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            cleanupOldPoints();   // ← ВОТ ЭТО КЛЮЧ
+
+            keyLight.position.copy(camera.position);
+            fillLight.position.copy(camera.position).add(new THREE.Vector3(3, 2, 3));
+
+            controls.update();
+            clouds.rotation.y += 0.0005;
+            renderer.render(scene, camera);
+        }
+
+        animate();
+        fetchPackages();
+        setInterval(fetchPackages, 2000);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        updateStats();
+    </script>
+</body>
+
+</html>
