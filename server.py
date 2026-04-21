@@ -11,13 +11,10 @@ def index():
     return render_template('visual.html')
 
 
-@app.route('/package', methods=['POST', 'GET'])
+@app.route('/package', methods=['GET'])
 def receive_package():
-    if request.method == 'POST':
-        data = request.json
-    else:
-        import json
-        data = json.loads(request.args.get('data'))
+    import json
+    data = json.loads(request.args.get('data'))
 
     packages.append(data)
     print(f"📦 Received: {data['ip']} (total: {len(packages)})")
